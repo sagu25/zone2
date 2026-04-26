@@ -931,7 +931,8 @@
               0 0  8px color-mix(in srgb, var(--agent-color) 15%, transparent);
 }
 .brief-card-enter {
-  animation: brief-card-in 0.35s cubic-bezier(0.16,1,0.3,1);
+  animation: brief-card-in 0.35s cubic-bezier(0.16,1,0.3,1),
+             brief-card-breathe 2.8s ease-in-out 0.35s infinite;
 }
 .brief-card-exit {
   animation: brief-card-out 0.4s ease forwards;
@@ -943,6 +944,16 @@
 @keyframes brief-card-out {
   from { opacity: 1; transform: scale(1);    }
   to   { opacity: 0; transform: scale(0.88); }
+}
+@keyframes brief-card-breathe {
+  0%, 100% {
+    box-shadow: 0 0 24px color-mix(in srgb, var(--agent-color) 20%, transparent),
+                0 0  6px color-mix(in srgb, var(--agent-color) 10%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 48px color-mix(in srgb, var(--agent-color) 45%, transparent),
+                0 0 16px color-mix(in srgb, var(--agent-color) 25%, transparent);
+  }
 }
 
 .brief-card-glow {
@@ -958,6 +969,11 @@
   line-height: 1;
   position: relative;
   z-index: 1;
+  animation: brief-icon-float 3s ease-in-out infinite;
+}
+@keyframes brief-icon-float {
+  0%, 100% { transform: translateY(0px);   }
+  50%       { transform: translateY(-7px);  }
 }
 .brief-card-name {
   font-family: 'JetBrains Mono', monospace;
