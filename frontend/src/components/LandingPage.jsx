@@ -237,9 +237,10 @@ function RobotAvatar({ talking, gender }) {
 
 // ── Cinematic intro narration (spoken by BARRIER — deepest voice) ─────────────
 const INTRO_SCRIPT = [
-  'The energy grid runs on autonomous AI agents — making thousands of decisions with no human approving every command.',
-  'When one goes rogue, TARE catches it. Thirteen specialized agents. Three defence layers. Zero tolerance.',
-  'Meet the team.',
+  'Power grids. Water systems. Industrial plants. The world\'s critical infrastructure is moving toward full autonomous AI control — agents making thousands of decisions, with no human approving every command.',
+  'The security tools we have today were built for humans. Not for AI agents. When an agent goes rogue — with valid credentials, passing every check — there is nothing in place to stop it.',
+  'TARE was built for that gap. A security platform purpose-built for autonomous AI agents on operational technology infrastructure. The concept is ahead of its time — because the threat is coming.',
+  'Meet the team that will be ready when it does.',
 ]
 
 // ── Agent Briefing Modal ──────────────────────────────────────────────────────
