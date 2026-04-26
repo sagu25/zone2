@@ -4,10 +4,8 @@ import { narrationEngine, narStart, narStop, narTogglePause, narToggleMute } fro
 const SRC_META = {
   GATEWAY:    { icon: '⟳', label: 'GATEWAY',    cls: 'ls-gateway' },
   TARE:       { icon: '⚡', label: 'TARE',       cls: 'ls-tare'    },
-  AUTH:       { icon: '🔐', label: 'AUTH',       cls: 'ls-auth'    },
   ServiceNow: { icon: '■',  label: 'S-NOW',      cls: 'ls-snow'    },
   SUPERVISOR: { icon: '◆',  label: 'SUPERVISOR', cls: 'ls-super'   },
-  ML:         { icon: '🤖', label: 'ML',         cls: 'ls-ml'      },
 }
 
 const SCENARIOS = [
