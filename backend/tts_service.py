@@ -26,8 +26,8 @@ AGENT_VOICES = {
 
     # Zone 1 — Trench
     "TRITON":   {"voice": "en-US-ChristopherNeural","rate": "+10%", "pitch": "-10%"},  # decisive executor male
-    "AEGIS":    {"voice": "en-US-DavisNeural",     "rate": "-15%", "pitch": "-20%"},  # deep safety validator
-    "TEMPEST":  {"voice": "en-GB-MaisieNeural",    "rate": "+20%", "pitch": "+5%"},   # alert, fast female
+    "AEGIS":    {"voice": "en-US-DavisNeural",     "rate": "-5%",  "pitch": "-8%"},   # authoritative safety validator
+    "TEMPEST":  {"voice": "en-US-AriaNeural",      "rate": "+8%",  "pitch": "+2%"},   # alert, professional female
     "LEVIER":   {"voice": "en-US-AmberNeural",     "rate": "-10%", "pitch": "0%"},    # calm rollback female
 
     # Zone 4

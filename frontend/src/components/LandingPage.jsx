@@ -234,12 +234,26 @@ function RobotAvatar({ talking, gender }) {
   )
 }
 
-// ── Cinematic intro narration (spoken by BARRIER — deepest voice) ─────────────
+// ── Cinematic intro narration (spoken by NARRATOR) ───────────────────────────
+// images[] cycles automatically while that line plays (every 2.6s)
+// Add 1b.jpg (water system) and 1c.jpg (industrial plant) to frontend/public/intro/
 const INTRO_SCRIPT = [
-  'Power grids. Water systems. Industrial plants. The world\'s critical infrastructure is moving toward full autonomous AI control — agents making thousands of decisions, with no human approving every command.',
-  'The security tools we have today were built for humans. Not for AI agents. When an agent goes rogue — with valid credentials, passing every check — there is nothing in place to stop it.',
-  'TARE was built for that gap. A security platform purpose-built for autonomous AI agents on operational technology infrastructure. The concept is ahead of its time — because the threat is coming.',
-  'Meet the team that will be ready when it does.',
+  {
+    text:   'Power grids. Water systems. Industrial plants. The world\'s critical infrastructure is moving toward full autonomous AI control — agents making thousands of decisions, with no human approving every command.',
+    images: ['/intro/1.jpg', '/intro/1b.jpg', '/intro/1c.jpg'],
+  },
+  {
+    text:   'The security tools we have today were built for humans. Not for AI agents. When an agent goes rogue — with valid credentials, passing every check — there is nothing in place to stop it.',
+    images: ['/intro/2.jpg'],
+  },
+  {
+    text:   'TARE was built for that gap. A security platform purpose-built for autonomous AI agents on operational technology infrastructure. The concept is ahead of its time — because the threat is coming.',
+    images: ['/intro/3.jpg'],
+  },
+  {
+    text:   'Meet the team that will be ready when it does.',
+    images: ['/intro/4.jpg'],
+  },
 ]
 
 // ── Agent Briefing Modal ──────────────────────────────────────────────────────
@@ -249,7 +263,8 @@ function AgentBriefing({ onClose }) {
   const [activeIdx,  setActiveIdx]  = useState(-1)
   const [nextName,   setNextName]   = useState('')
   const [nextColor,  setNextColor]  = useState('#00d4ff')
-  const [introLine,  setIntroLine]  = useState(0)
+  const [introLine,     setIntroLine]     = useState(0)
+  const [introImageIdx, setIntroImageIdx] = useState(0)
   const cancelRef = useRef(false)
   const delay = ms => new Promise(r => setTimeout(r, ms))
 
@@ -261,7 +276,7 @@ function AgentBriefing({ onClose }) {
     for (let i = 0; i < INTRO_SCRIPT.length; i++) {
       if (cancelRef.current) return
       setIntroLine(i)
-      await speakAgentAsync('NARRATOR', INTRO_SCRIPT[i])
+      await speakAgentAsync('NARRATOR', INTRO_SCRIPT[i].text)
       if (i < INTRO_SCRIPT.length - 1) await delay(400)
     }
     await delay(500)
@@ -305,6 +320,7 @@ function AgentBriefing({ onClose }) {
     }
 
     if (!cancelRef.current) {
+      await speakAgentAsync('NARRATOR', "All thirteen agents have been briefed. Now let's move on to the dashboard.")
       setPhase('done')
       setActiveIdx(-1)
     }
@@ -320,6 +336,15 @@ function AgentBriefing({ onClose }) {
     startBriefing()
     return () => { cancelRef.current = true; clearVoiceQueue() }
   }, [])
+
+  // Cycle images for lines that have multiple images
+  useEffect(() => {
+    const item = INTRO_SCRIPT[introLine]
+    if (!item || item.images.length <= 1) { setIntroImageIdx(0); return }
+    setIntroImageIdx(0)
+    const t = setInterval(() => setIntroImageIdx(i => (i + 1) % item.images.length), 2600)
+    return () => clearInterval(t)
+  }, [introLine])
 
   const zones   = [...new Set(BRIEFING_LINES.map(b => b.zone))]
   const active  = activeIdx >= 0 ? BRIEFING_LINES[activeIdx] : null
@@ -340,13 +365,15 @@ function AgentBriefing({ onClose }) {
           <div className="brief-subtitle">13 SPECIALISED AI ENTITIES · TARE SECURITY NETWORK</div>
         </div>
 
+        {/* Two-column body: spotlight left, agent list right */}
+        <div className="brief-body">
         {/* Spotlight card */}
         <div className="brief-spotlight">
           {phase === 'intro' && (
             <div className="brief-intro">
-              <div key={introLine} className="brief-intro-scene">
+              <div key={`${introLine}-${introImageIdx}`} className="brief-intro-scene">
                 <img
-                  src={`/intro/${introLine + 1}.jpg`}
+                  src={INTRO_SCRIPT[introLine]?.images[introImageIdx] ?? `/intro/${introLine + 1}.jpg`}
                   className="brief-intro-img"
                   alt=""
                   onError={e => { e.currentTarget.style.display = 'none' }}
@@ -440,6 +467,8 @@ function AgentBriefing({ onClose }) {
             )
           })}
         </div>
+
+        </div>{/* end brief-body */}
 
         {/* Footer */}
         <div className="brief-footer">
