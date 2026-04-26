@@ -196,6 +196,26 @@ const ZONE_LABELS = {
   'Zone 4': { label:'Zone 4 · Policy Enforcement',           color:'#00b8e6' },
 }
 
+// ── Robotic CSS Avatar ────────────────────────────────────────────────────────
+function RobotAvatar({ talking }) {
+  return (
+    <div className="robo-wrap">
+      <div className="robo-antenna">
+        <div className="robo-antenna-ball" />
+        <div className="robo-antenna-stem" />
+      </div>
+      <div className="robo-head">
+        <div className="robo-eyes">
+          <div className="robo-eye" />
+          <div className="robo-eye" />
+        </div>
+        <div className="robo-nose" />
+        <div className={`robo-mouth${talking ? ' robo-mouth-talking' : ''}`} />
+      </div>
+    </div>
+  )
+}
+
 // ── Agent Briefing Modal ──────────────────────────────────────────────────────
 // phase: 'starting' | 'active' | 'passing' | 'done'
 function AgentBriefing({ onClose }) {
@@ -300,7 +320,7 @@ function AgentBriefing({ onClose }) {
               style={{ '--agent-color': active.color }}
             >
               <div className="brief-card-glow" />
-              <div className="brief-card-icon">{active.icon}</div>
+              <RobotAvatar talking={phase === 'active'} />
               <div className="brief-card-name" style={{ color: active.color }}>{active.agent}</div>
               <div className="brief-card-zone">{active.zone}</div>
               {phase === 'active' && (
