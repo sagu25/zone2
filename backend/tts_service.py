@@ -15,17 +15,17 @@ AGENT_VOICES = {
     # Zone 3 — Reef
     "KORAL":    {"voice": "en-GB-SoniaNeural",    "rate": "+10%", "pitch": "+10%"},  # sharp, observant female
     "MAREA":    {"voice": "en-IE-EmilyNeural",     "rate": "0%",   "pitch": "-5%"},   # measured analytical female (Irish)
-    "TASYA":    {"voice": "en-US-AriaNeural",      "rate": "-5%",  "pitch": "+5%"},   # context-aware female
+    "TASYA":    {"voice": "en-US-AvaNeural",       "rate": "-5%",  "pitch": "+5%"},   # context-aware female
     "NEREUS":   {"voice": "en-US-DavisNeural",     "rate": "-12%", "pitch": "-15%"},  # deep, authoritative male
 
     # Zone 2 — Shelf
     "ECHO":     {"voice": "en-AU-NatashaNeural",   "rate": "+10%", "pitch": "+10%"},  # clear diagnostic female
-    "SIMAR":    {"voice": "en-US-GuyNeural",       "rate": "+5%",  "pitch": "0%"},    # confident simulation male
+    "SIMAR":    {"voice": "en-US-EricNeural",      "rate": "+5%",  "pitch": "0%"},    # confident simulation male
     "NAVIS":    {"voice": "en-US-JennyNeural",     "rate": "0%",   "pitch": "-5%"},   # structured planning female
     "RISKADOR": {"voice": "en-GB-OliverNeural",    "rate": "-5%",  "pitch": "-10%"},  # measured risk male
 
     # Zone 1 — Trench
-    "TRITON":   {"voice": "en-US-TonyNeural",      "rate": "+10%", "pitch": "-10%"},  # decisive executor male
+    "TRITON":   {"voice": "en-US-ChristopherNeural","rate": "+10%", "pitch": "-10%"},  # decisive executor male
     "AEGIS":    {"voice": "en-US-DavisNeural",     "rate": "-15%", "pitch": "-20%"},  # deep safety validator
     "TEMPEST":  {"voice": "en-GB-MaisieNeural",    "rate": "+20%", "pitch": "+5%"},   # alert, fast female
     "LEVIER":   {"voice": "en-US-AmberNeural",     "rate": "-10%", "pitch": "0%"},    # calm rollback female
