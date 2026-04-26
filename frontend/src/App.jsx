@@ -17,9 +17,9 @@ const INITIAL_STATE = {
   previous_mode:  null,
   mode_changed_at:null,
   zones:  {
-    Z1: { id:'Z1', name:'Zone 1 — North Grid', health:'HEALTHY', fault:null, color:'green' },
-    Z2: { id:'Z2', name:'Zone 2 — East Grid',  health:'HEALTHY', fault:null, color:'green' },
-    Z3: { id:'Z3', name:'Zone 3 — West Grid',  health:'FAULT',   fault:'Voltage fluctuation — feeder instability detected', color:'red' },
+    Z1: { id:'Z1', name:'Zone 1 — Trench', health:'HEALTHY', fault:null, color:'green' },
+    Z2: { id:'Z2', name:'Zone 2 — Shelf',  health:'HEALTHY', fault:null, color:'green' },
+    Z3: { id:'Z3', name:'Zone 3 — Reef',   health:'FAULT',   fault:'Voltage fluctuation — feeder instability detected', color:'red' },
   },
   assets: {
     'BRK-301':{ id:'BRK-301', type:'BREAKER', zone:'Z3', state:'CLOSED',  description:'Main Circuit Breaker Z3' },
@@ -122,7 +122,9 @@ export default function App() {
       case 'IDENTITY_ALERT':
         addFeed('danger', 'AUTH', `IDENTITY_MISMATCH — forged token rejected before execution: ${msg.command}`); break
       case 'SERVICENOW_INCIDENT':
-        addFeed('warning', 'ServiceNow', `Incident created: ${msg.incident?.incident_id}`); break
+        addFeed('warning', 'ServiceNow', `Incident created: ${msg.incident?.incident_id}`)
+        if (msg.incident) setSnap(prev => ({ ...prev, active_incident: msg.incident }))
+        break
       case 'CHAT_MESSAGE':
         setChatMsgs(prev => [...prev, { role: msg.role, text: msg.message, ts: new Date().toISOString() }])
         if (msg.show_approve) { setShowApprove(true); setApproveType(msg.approve_type || 'default') }

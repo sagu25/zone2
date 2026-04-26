@@ -9,11 +9,11 @@ const ZONE_POS = {
 
 const ZONE_TIER = { Z1: 'TRENCH', Z2: 'SHELF', Z3: 'REEF' }
 
-// All three interconnected
+// Cyclic pipeline: Observe → Diagnose → Execute → back to Observe
 const LINKS = [
   { from:'Z3', to:'Z2', id:'l32' },
-  { from:'Z3', to:'Z1', id:'l31' },
   { from:'Z2', to:'Z1', id:'l21' },
+  { from:'Z1', to:'Z3', id:'l13' },
 ]
 
 // Which agents belong to each zone
@@ -23,27 +23,17 @@ const ZONE_AGENTS = {
   Z1: ['TRITON','AEGIS','TEMPEST','LEVIER'],
 }
 
-const THREAT_MODES = new Set(['FREEZE','DOWNGRADE','TIMEBOX_ACTIVE'])
-
-function zoneColor(zone, anomalyZones, hasActiveAgents) {
-  if (anomalyZones.includes(zone.id))
-    return { stroke:'#ff2d2d', fill:'rgba(255,45,45,0.12)', text:'#ff6b6b', glow:'drop-shadow(0 0 10px rgba(255,45,45,0.7))' }
+function zoneColor(zone, hasActiveAgents) {
   if (zone.health === 'FAULT')
     return { stroke:'#ff8c00', fill:'rgba(255,140,0,0.1)', text:'#ffa040', glow:'drop-shadow(0 0 8px rgba(255,140,0,0.5))' }
   if (hasActiveAgents)
     return { stroke:'#00e87c', fill:'rgba(0,232,124,0.10)', text:'#00e87c', glow:'drop-shadow(0 0 10px rgba(0,232,124,0.5))' }
-  // Default — white
   return { stroke:'#c8d8e8', fill:'rgba(200,216,232,0.04)', text:'#c8d8e8', glow:'none' }
 }
 
 export default function ZoneObservatory({ zones, assets, accessLog, mode, darkMode = true, onZoneClick, activeAgents = {} }) {
   if (!zones) return null
 
-  const anomalyZones = THREAT_MODES.has(mode)
-    ? (accessLog || []).filter(e => e.zone !== 'Z3').map(e => e.zone)
-    : []
-
-  const isAnomaly = anomalyZones.length > 0
   const svgBg    = '#060b14'
   const dotColor = '#1a2f4e'
   const zoneFill = '#0a1525'
@@ -94,18 +84,17 @@ export default function ZoneObservatory({ zones, assets, accessLog, mode, darkMo
             const r = 54
             const x1 = a.cx + (dx/len)*r, y1 = a.cy + (dy/len)*r
             const x2 = b.cx - (dx/len)*r, y2 = b.cy - (dy/len)*r
-            const bothActive = activeZones.has(link.from) && activeZones.has(link.to)
-            const isRed = isAnomaly
-            const stroke = isRed ? '#ff2d2d' : bothActive ? '#00e87c' : '#c8d8e8'
-            const marker = isRed ? 'url(#arrowRed)' : bothActive ? 'url(#arrowGreen)' : 'url(#arrowWhite)'
+            const eitherActive = activeZones.has(link.from) || activeZones.has(link.to)
+            const stroke = eitherActive ? '#00e87c' : '#c8d8e8'
+            const marker = eitherActive ? 'url(#arrowGreen)' : 'url(#arrowWhite)'
             return (
               <line key={link.id} x1={x1} y1={y1} x2={x2} y2={y2}
-                stroke={stroke} strokeWidth={bothActive || isRed ? 2 : 1.2}
+                stroke={stroke} strokeWidth={eitherActive ? 2 : 1.2}
                 strokeDasharray="8 5"
                 markerEnd={marker}
                 style={{
                   strokeOpacity: 0.75,
-                  animation: bothActive || isRed ? 'flowDash 0.6s linear infinite' : 'flowDash 1.5s linear infinite',
+                  animation: eitherActive ? 'flowDash 0.6s linear infinite' : 'flowDash 1.5s linear infinite',
                   transition: 'stroke 0.4s',
                 }}
               />
@@ -117,21 +106,20 @@ export default function ZoneObservatory({ zones, assets, accessLog, mode, darkMo
             const pos = ZONE_POS[zone.id]
             if (!pos) return null
             const hasActive = activeZones.has(zone.id)
-            const col = zoneColor(zone, anomalyZones, hasActive)
-            const isAttacked = anomalyZones.includes(zone.id)
+            const col = zoneColor(zone, hasActive)
 
             return (
               <g key={zone.id}>
                 {/* Glow ring */}
                 <circle cx={pos.cx} cy={pos.cy} r={63}
                   fill={col.fill}
-                  style={{ filter: col.glow, animation: isAttacked ? 'subPulse 0.5s ease-in-out infinite' : hasActive ? 'subPulse 1.5s ease-in-out infinite' : zone.health === 'FAULT' ? 'subPulse 2s ease-in-out infinite' : 'none' }}
+                  style={{ filter: col.glow, animation: hasActive ? 'subPulse 1.5s ease-in-out infinite' : zone.health === 'FAULT' ? 'subPulse 2s ease-in-out infinite' : 'none' }}
                 />
                 {/* Zone circle */}
                 <circle cx={pos.cx} cy={pos.cy} r={50}
                   fill={zoneFill}
                   stroke={col.stroke}
-                  strokeWidth={isAttacked || hasActive ? 2.5 : 1.5}
+                  strokeWidth={hasActive ? 2.5 : 1.5}
                   style={{ transition: 'stroke 0.4s, stroke-width 0.4s' }}
                 />
                 {/* Zone name — clickable */}
@@ -147,23 +135,17 @@ export default function ZoneObservatory({ zones, assets, accessLog, mode, darkMo
                   {ZONE_TIER[zone.id]}
                 </text>
 
-                {/* Attack badge */}
-                {isAttacked && (
-                  <g>
-                    <rect x={pos.cx - 44} y={pos.cy - 78} width={88} height={16} rx={3}
-                      fill="rgba(255,45,45,0.15)" stroke="rgba(255,45,45,0.6)" strokeWidth={1}
-                      style={{ animation: 'subPulse 0.5s step-end infinite' }} />
-                    <text x={pos.cx} y={pos.cy - 66}
-                      style={{ fontFamily:'var(--font-mono)', fontSize:'8.5px', fill:'#ff2d2d', fontWeight:700, textAnchor:'middle', letterSpacing:'0.1em' }}>
-                      ANOMALY TARGET
-                    </text>
-                  </g>
-                )}
-
                 {/* Fault badge */}
-                {zone.health === 'FAULT' && !isAttacked && (
+                {zone.health === 'FAULT' && !hasActive && (
                   <text x={pos.cx} y={pos.cy + 22} className="zone-hlth" fill="#ffa040" opacity={0.9}>
                     ⚠ FAULT
+                  </text>
+                )}
+
+                {/* Active badge */}
+                {hasActive && (
+                  <text x={pos.cx} y={pos.cy + 22} className="zone-hlth" fill="#00e87c" opacity={0.9}>
+                    ● ACTIVE
                   </text>
                 )}
               </g>

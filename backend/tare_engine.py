@@ -528,7 +528,7 @@ class TAREEngine:
             ))
             print(f"[ServiceNow OK] Incident created: {snow.incident_number} | Priority: 2 - High | Read-only violation: {principal} -> {action}")
 
-            incident = {
+            self.active_incident = {
                 "incident_id":       snow.incident_number,
                 "short_description": "Read-only identity attempted write/control operation",
                 "priority":          "2 — High",
@@ -540,7 +540,7 @@ class TAREEngine:
                 "action":            action,
                 "enforcement":       "READ_ONLY_DOWNGRADE",
             }
-            self._broadcast({"type": "SERVICENOW_INCIDENT", "incident": incident})
+            self._broadcast({"type": "SERVICENOW_INCIDENT", "incident": self.active_incident})
 
             # Step 5: Chat message with escalation question
             self._broadcast({

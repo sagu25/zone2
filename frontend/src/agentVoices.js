@@ -61,9 +61,10 @@ function _pickVoice(preferenceList) {
 }
 
 // ── TTS Queue ──────────────────────────────────────────────────────────────────
-let _queue    = []
-let _speaking = false
-let _muted    = false
+let _queue        = []
+let _speaking     = false
+let _muted        = false
+let _currentAudio = null   // tracks the active HTMLAudioElement so we can stop it
 
 // How each agent name should be pronounced
 const PRONUNCIATIONS = {
@@ -82,8 +83,17 @@ const PRONUNCIATIONS = {
   BARRIER:  'Barrier',
 }
 
+function _stopCurrentAudio() {
+  if (_currentAudio) {
+    _currentAudio.pause()
+    _currentAudio.src = ''
+    _currentAudio = null
+  }
+}
+
 // ── Azure path ─────────────────────────────────────────────────────────────────
 async function _speakAzure(agent, text) {
+  _stopCurrentAudio()
   try {
     const res = await fetch('/api/tts', {
       method:  'POST',
@@ -92,15 +102,16 @@ async function _speakAzure(agent, text) {
     })
     if (!res.ok) return false
 
-    const blob = await res.blob()
-    const url  = URL.createObjectURL(blob)
+    const blob  = await res.blob()
+    const url   = URL.createObjectURL(blob)
     const audio = new Audio(url)
+    _currentAudio = audio
 
     return new Promise(resolve => {
-      audio.onended = () => { URL.revokeObjectURL(url); resolve(true) }
-      audio.onerror = () => { URL.revokeObjectURL(url); resolve(false) }
+      audio.onended = () => { URL.revokeObjectURL(url); _currentAudio = null; resolve(true) }
+      audio.onerror = () => { URL.revokeObjectURL(url); _currentAudio = null; resolve(false) }
       audio.volume  = _muted ? 0 : 1.0
-      audio.play().catch(() => resolve(false))
+      audio.play().catch(() => { _currentAudio = null; resolve(false) })
     })
   } catch {
     return false
@@ -186,18 +197,21 @@ export async function fetchAudio(agent, message) {
 
 // Plays a pre-fetched blob URL and resolves when done.
 export function playBlobUrl(url) {
+  _stopCurrentAudio()
   return new Promise(resolve => {
     const audio  = new Audio(url)
+    _currentAudio = audio
     audio.volume = _muted ? 0 : 1.0
-    audio.onended = () => { URL.revokeObjectURL(url); resolve() }
-    audio.onerror = () => { URL.revokeObjectURL(url); resolve() }
-    audio.play().catch(() => resolve())
+    audio.onended = () => { URL.revokeObjectURL(url); _currentAudio = null; resolve() }
+    audio.onerror = () => { URL.revokeObjectURL(url); _currentAudio = null; resolve() }
+    audio.play().catch(() => { _currentAudio = null; resolve() })
   })
 }
 
 export function setVoiceMuted(muted) {
   _muted = muted
   if (muted) {
+    _stopCurrentAudio()
     window.speechSynthesis?.cancel()
     _queue    = []
     _speaking = false
@@ -207,6 +221,7 @@ export function setVoiceMuted(muted) {
 export function isVoiceMuted() { return _muted }
 
 export function clearVoiceQueue() {
+  _stopCurrentAudio()
   window.speechSynthesis?.cancel()
   _queue    = []
   _speaking = false
