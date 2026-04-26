@@ -161,6 +161,9 @@ export function speakAgent(agent, message) {
   if (_muted) return
   const name = PRONUNCIATIONS[agent] || agent.charAt(0) + agent.slice(1).toLowerCase()
   const text = `${name}: ${message}`
+  // If this agent already has a queued (unplayed) entry, replace it with the
+  // newer message so rapid-fire scenarios don't pile up stale commentary.
+  _queue = _queue.filter(item => item.agent !== agent)
   _queue.push({ agent, text })
   _processQueue()
 }
