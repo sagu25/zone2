@@ -662,7 +662,7 @@
   background: #060d18;
   border: 1px solid #0d2a3a;
   border-radius: 14px;
-  width: min(860px, 94vw);
+  width: min(980px, 96vw);
   max-height: 88vh;
   display: flex;
   flex-direction: column;
