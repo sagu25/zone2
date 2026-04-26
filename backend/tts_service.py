@@ -14,7 +14,7 @@ AZURE_SPEECH_REGION = os.environ.get("AZURE_SPEECH_REGION", "eastus")
 AGENT_VOICES = {
     # Zone 3 — Reef
     "KORAL":    {"voice": "en-GB-SoniaNeural",    "rate": "+10%", "pitch": "+10%"},  # sharp, observant female
-    "MAREA":    {"voice": "en-GB-RyanNeural",      "rate": "0%",   "pitch": "-5%"},   # measured analytical male
+    "MAREA":    {"voice": "en-IE-EmilyNeural",     "rate": "0%",   "pitch": "-5%"},   # measured analytical female (Irish)
     "TASYA":    {"voice": "en-US-AriaNeural",      "rate": "-5%",  "pitch": "+5%"},   # context-aware female
     "NEREUS":   {"voice": "en-US-DavisNeural",     "rate": "-12%", "pitch": "-15%"},  # deep, authoritative male
 
