@@ -149,7 +149,6 @@ const MONITORS = [
 
 const STATS = [
   { value:'4',    label:'Attack\nScenarios'    },
-  { value:'3',    label:'Detection\nLayers'    },
   { value:'13',   label:'AI Agents\nActive'    },
   { value:'LLM',  label:'Real AI\nAgent'       },
   { value:'AUTO', label:'Autonomous\nResponse' },
