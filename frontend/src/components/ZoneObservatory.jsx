@@ -24,10 +24,10 @@ const ZONE_AGENTS = {
 }
 
 function zoneColor(zone, hasActiveAgents) {
-  if (zone.health === 'FAULT')
-    return { stroke:'#ff8c00', fill:'rgba(255,140,0,0.1)', text:'#ffa040', glow:'drop-shadow(0 0 8px rgba(255,140,0,0.5))' }
   if (hasActiveAgents)
     return { stroke:'#00e87c', fill:'rgba(0,232,124,0.10)', text:'#00e87c', glow:'drop-shadow(0 0 10px rgba(0,232,124,0.5))' }
+  if (zone.health === 'FAULT')
+    return { stroke:'#ff8c00', fill:'rgba(255,140,0,0.1)', text:'#ffa040', glow:'drop-shadow(0 0 8px rgba(255,140,0,0.5))' }
   return { stroke:'#c8d8e8', fill:'rgba(200,216,232,0.04)', text:'#c8d8e8', glow:'none' }
 }
 
