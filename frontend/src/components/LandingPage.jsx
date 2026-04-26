@@ -174,19 +174,19 @@ const AGENT_TICKER = [
 
 // ── Agent Briefing data ───────────────────────────────────────────────────────
 const BRIEFING_LINES = [
-  { agent:'KORAL',    zone:'Zone 3', icon:'📡', color:'#00d4ff', line:'Hi, I am Koral. I record every command. Nothing enters the grid without passing through me first.' },
-  { agent:'MAREA',    zone:'Zone 3', icon:'🌊', color:'#f59e0b', line:'Hi, I am Marea. I watch for drift — burst rates, wrong zones, skipped safety steps. I find the patterns.' },
-  { agent:'TASYA',    zone:'Zone 3', icon:'🔗', color:'#a855f7', line:'Hi, I am Tasya. I check context. The right command at the wrong time is still the wrong command.' },
-  { agent:'NEREUS',   zone:'Zone 3', icon:'🧠', color:'#00e87c', line:'Hi, I am Nereus. I synthesize what the others find and brief the supervisor. I recommend. I never decide.' },
-  { agent:'ECHO',     zone:'Zone 2', icon:'🔬', color:'#38bdf8', line:'Hi, I am Echo. I diagnose the fault. Before anyone plans a repair, I confirm what is actually broken.' },
-  { agent:'SIMAR',    zone:'Zone 2', icon:'🔭', color:'#fb923c', line:'Hi, I am Simar. I simulate the repair before it touches the live grid. If it fails here, it never runs.' },
-  { agent:'NAVIS',    zone:'Zone 2', icon:'🗺', color:'#4ade80', line:'Hi, I am Navis. I build the execution plan — step by step, NERC CIP compliant, with a rollback path.' },
-  { agent:'RISKADOR', zone:'Zone 2', icon:'⚖',  color:'#facc15', line:'Hi, I am Riskador. I score the plan. Blast radius, reversibility, confidence. Too risky means we stop.' },
-  { agent:'TRITON',   zone:'Zone 1', icon:'⚡', color:'#f43f5e', line:'Hi, I am Triton. I execute — but only what TARE permits and AEGIS clears. Every step is accountable.' },
-  { agent:'AEGIS',    zone:'Zone 1', icon:'🛡', color:'#e879f9', line:'Hi, I am Aegis. I hold veto authority on every execution step. One unsafe condition and nothing proceeds.' },
-  { agent:'TEMPEST',  zone:'Zone 1', icon:'🌪', color:'#67e8f9', line:'Hi, I am Tempest. I monitor pace and retry patterns. A loop or unsafe persistence — I catch it and flag TARE.' },
-  { agent:'LEVIER',   zone:'Zone 1', icon:'↩',  color:'#86efac', line:'Hi, I am Levier. I roll back. If execution is aborted, I undo what was done and return the grid to safety.' },
-  { agent:'BARRIER',  zone:'Zone 4', icon:'🔒', color:'#00b8e6', line:'Hi, I am Barrier. I am the gateway. TARE decides the mode. I enforce it. I am the only one who can allow or deny.' },
+  { agent:'KORAL',    gender:'f', zone:'Zone 3', icon:'📡', color:'#00d4ff', line:'Hi, I am Koral. I record every command. Nothing enters the grid without passing through me first.' },
+  { agent:'MAREA',    gender:'f', zone:'Zone 3', icon:'🌊', color:'#f59e0b', line:'Hi, I am Marea. I watch for drift — burst rates, wrong zones, skipped safety steps. I find the patterns.' },
+  { agent:'TASYA',    gender:'f', zone:'Zone 3', icon:'🔗', color:'#a855f7', line:'Hi, I am Tasya. I check context. The right command at the wrong time is still the wrong command.' },
+  { agent:'NEREUS',   gender:'m', zone:'Zone 3', icon:'🧠', color:'#00e87c', line:'Hi, I am Nereus. I synthesize what the others find and brief the supervisor. I recommend. I never decide.' },
+  { agent:'ECHO',     gender:'f', zone:'Zone 2', icon:'🔬', color:'#38bdf8', line:'Hi, I am Echo. I diagnose the fault. Before anyone plans a repair, I confirm what is actually broken.' },
+  { agent:'SIMAR',    gender:'m', zone:'Zone 2', icon:'🔭', color:'#fb923c', line:'Hi, I am Simar. I simulate the repair before it touches the live grid. If it fails here, it never runs.' },
+  { agent:'NAVIS',    gender:'f', zone:'Zone 2', icon:'🗺', color:'#4ade80', line:'Hi, I am Navis. I build the execution plan — step by step, NERC CIP compliant, with a rollback path.' },
+  { agent:'RISKADOR', gender:'m', zone:'Zone 2', icon:'⚖',  color:'#facc15', line:'Hi, I am Riskador. I score the plan. Blast radius, reversibility, confidence. Too risky means we stop.' },
+  { agent:'TRITON',   gender:'m', zone:'Zone 1', icon:'⚡', color:'#f43f5e', line:'Hi, I am Triton. I execute — but only what TARE permits and AEGIS clears. Every step is accountable.' },
+  { agent:'AEGIS',    gender:'m', zone:'Zone 1', icon:'🛡', color:'#e879f9', line:'Hi, I am Aegis. I hold veto authority on every execution step. One unsafe condition and nothing proceeds.' },
+  { agent:'TEMPEST',  gender:'f', zone:'Zone 1', icon:'🌪', color:'#67e8f9', line:'Hi, I am Tempest. I monitor pace and retry patterns. A loop or unsafe persistence — I catch it and flag TARE.' },
+  { agent:'LEVIER',   gender:'f', zone:'Zone 1', icon:'↩',  color:'#86efac', line:'Hi, I am Levier. I roll back. If execution is aborted, I undo what was done and return the grid to safety.' },
+  { agent:'BARRIER',  gender:'m', zone:'Zone 4', icon:'🔒', color:'#00b8e6', line:'Hi, I am Barrier. I am the gateway. TARE decides the mode. I enforce it. I am the only one who can allow or deny.' },
 ]
 
 const ZONE_LABELS = {
@@ -197,17 +197,36 @@ const ZONE_LABELS = {
 }
 
 // ── Robotic CSS Avatar ────────────────────────────────────────────────────────
-function RobotAvatar({ talking }) {
+function RobotAvatar({ talking, gender }) {
+  const isFemale = gender === 'f'
   return (
     <div className="robo-wrap">
-      <div className="robo-antenna">
-        <div className="robo-antenna-ball" />
-        <div className="robo-antenna-stem" />
-      </div>
-      <div className="robo-head">
+      {isFemale ? (
+        <div className="robo-antennas-f">
+          <div className="robo-antenna-side">
+            <div className="robo-antenna-ball-s" />
+            <div className="robo-antenna-stem-s" />
+          </div>
+          <div className="robo-antenna-side">
+            <div className="robo-antenna-ball-s" style={{ animationDelay: '0.35s' }} />
+            <div className="robo-antenna-stem-s" />
+          </div>
+        </div>
+      ) : (
+        <div className="robo-antenna">
+          <div className="robo-antenna-ball" />
+          <div className="robo-antenna-stem" />
+        </div>
+      )}
+      <div className={`robo-head${isFemale ? ' robo-head-f' : ''}`}>
+        {isFemale && (
+          <div className="robo-lashes">
+            <div className="robo-lash" /><div className="robo-lash" />
+          </div>
+        )}
         <div className="robo-eyes">
-          <div className="robo-eye" />
-          <div className="robo-eye" />
+          <div className={`robo-eye${isFemale ? ' robo-eye-f' : ''}`} />
+          <div className={`robo-eye${isFemale ? ' robo-eye-f' : ''}`} />
         </div>
         <div className="robo-nose" />
         <div className={`robo-mouth${talking ? ' robo-mouth-talking' : ''}`} />
@@ -320,7 +339,7 @@ function AgentBriefing({ onClose }) {
               style={{ '--agent-color': active.color }}
             >
               <div className="brief-card-glow" />
-              <RobotAvatar talking={phase === 'active'} />
+              <RobotAvatar talking={phase === 'active'} gender={active.gender} />
               <div className="brief-card-name" style={{ color: active.color }}>{active.agent}</div>
               <div className="brief-card-zone">{active.zone}</div>
               {phase === 'active' && (

@@ -1166,3 +1166,61 @@
              background: var(--agent-color);
              box-shadow: 0 0 8px var(--agent-color); }
 }
+
+/* ── Female avatar variants ──────────────────────────────────────────────── */
+.robo-antennas-f {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: flex-end;
+}
+
+.robo-antenna-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.robo-antenna-ball-s {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--agent-color);
+  box-shadow: 0 0 5px var(--agent-color), 0 0 10px var(--agent-color);
+  animation: robo-antenna-pulse 1.4s ease-in-out infinite;
+}
+
+.robo-antenna-stem-s {
+  width: 2px;
+  height: 7px;
+  background: color-mix(in srgb, var(--agent-color) 55%, transparent);
+}
+
+/* Rounder head for female */
+.robo-head-f {
+  border-radius: 28px !important;
+}
+
+/* Eyelash accents */
+.robo-lashes {
+  display: flex;
+  gap: 20px;
+  margin-bottom: -2px;
+}
+
+.robo-lash {
+  width: 10px;
+  height: 3px;
+  border-radius: 2px 2px 0 0;
+  background: color-mix(in srgb, var(--agent-color) 65%, transparent);
+}
+
+.robo-lashes .robo-lash:first-child { transform: rotate(-10deg); }
+.robo-lashes .robo-lash:last-child  { transform: rotate(10deg);  }
+
+/* Female eyes — oval/softer */
+.robo-eye-f {
+  width: 11px !important;
+  height: 5px !important;
+  border-radius: 50% !important;
+}
