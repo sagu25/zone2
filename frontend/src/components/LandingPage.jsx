@@ -235,24 +235,42 @@ function RobotAvatar({ talking, gender }) {
   )
 }
 
+// ── Cinematic intro narration (spoken by BARRIER — deepest voice) ─────────────
+const INTRO_SCRIPT = [
+  'The energy grid runs on autonomous AI agents — making thousands of decisions with no human approving every command.',
+  'When one goes rogue, TARE catches it. Thirteen specialized agents. Three defence layers. Zero tolerance.',
+  'Meet the team.',
+]
+
 // ── Agent Briefing Modal ──────────────────────────────────────────────────────
-// phase: 'starting' | 'active' | 'passing' | 'done'
+// phase: 'intro' | 'starting' | 'active' | 'passing' | 'done'
 function AgentBriefing({ onClose }) {
-  const [phase,      setPhase]      = useState('starting')
+  const [phase,      setPhase]      = useState('intro')
   const [activeIdx,  setActiveIdx]  = useState(-1)
   const [nextName,   setNextName]   = useState('')
   const [nextColor,  setNextColor]  = useState('#00d4ff')
+  const [introLine,  setIntroLine]  = useState(0)
   const cancelRef = useRef(false)
   const delay = ms => new Promise(r => setTimeout(r, ms))
 
   async function startBriefing() {
     cancelRef.current = false
 
-    // Show "System Briefing Initiated" for 1.4s while prefetching first agent
+    // ── Cinematic intro ──────────────────────────────────────────────────────
+    setPhase('intro')
+    for (let i = 0; i < INTRO_SCRIPT.length; i++) {
+      if (cancelRef.current) return
+      setIntroLine(i)
+      await speakAgentAsync('BARRIER', INTRO_SCRIPT[i])
+      if (i < INTRO_SCRIPT.length - 1) await delay(400)
+    }
+    await delay(500)
+
+    // ── System Briefing Initiated (prefetch first agent during this pause) ──
     setPhase('starting')
     const firstItem  = BRIEFING_LINES[0]
     const firstFetch = fetchAudio(firstItem.agent, firstItem.line)
-    await delay(1400)
+    await delay(900)
 
     let cachedUrl = await firstFetch
 
@@ -324,6 +342,14 @@ function AgentBriefing({ onClose }) {
 
         {/* Spotlight card */}
         <div className="brief-spotlight">
+          {phase === 'intro' && (
+            <div className="brief-intro">
+              <div className="brief-intro-tare">TARE</div>
+              <div className="brief-intro-tagline">TRUSTED ACCESS RESPONSE ENGINE</div>
+              <div key={introLine} className="brief-intro-line">{INTRO_SCRIPT[introLine]}</div>
+            </div>
+          )}
+
           {phase === 'starting' && (
             <div className="brief-sys-start">
               <div className="brief-sys-dot" /><div className="brief-sys-dot" /><div className="brief-sys-dot" />

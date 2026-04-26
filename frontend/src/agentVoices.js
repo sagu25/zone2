@@ -155,29 +155,25 @@ export function speakAgent(agent, message) {
 
 // Speaks a single line and resolves when audio finishes.
 // Used by AgentBriefing for sequential, awaitable playback.
+// No name prefix — briefing lines are self-introducing ("Hi, I am Koral...")
 export async function speakAgentAsync(agent, message) {
   if (_muted) return
-  const name = PRONUNCIATIONS[agent] || agent.charAt(0) + agent.slice(1).toLowerCase()
-  const text = `${name}: ${message}`
-
   if (_azureReady) {
-    const ok = await _speakAzure(agent, text)
+    const ok = await _speakAzure(agent, message)
     if (ok) return
   }
-  await _speakBrowser(agent, text)
+  await _speakBrowser(agent, message)
 }
 
 // Fetches audio from Azure and returns a blob URL — does NOT play it.
 // Use this to prefetch next agent's audio while current is speaking.
 export async function fetchAudio(agent, message) {
   if (!_azureReady) return null
-  const name = PRONUNCIATIONS[agent] || agent.charAt(0) + agent.slice(1).toLowerCase()
-  const text = `${name}: ${message}`
   try {
     const res = await fetch('/api/tts', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ agent, text }),
+      body:    JSON.stringify({ agent, text: message }),
     })
     if (!res.ok) return null
     const blob = await res.blob()
