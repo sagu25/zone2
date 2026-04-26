@@ -32,6 +32,9 @@ AGENT_VOICES = {
 
     # Zone 4
     "BARRIER":  {"voice": "en-US-GuyNeural",       "rate": "-15%", "pitch": "-25%"},  # commanding enforcement
+
+    # Cinematic intro narrator — natural conversational male
+    "NARRATOR": {"voice": "en-US-AndrewNeural",    "rate": "+2%",  "pitch": "0%"},
 }
 
 _DEFAULT_VOICE = {"voice": "en-US-JennyNeural", "rate": "0%", "pitch": "0%"}

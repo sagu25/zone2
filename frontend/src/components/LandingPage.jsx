@@ -262,7 +262,7 @@ function AgentBriefing({ onClose }) {
     for (let i = 0; i < INTRO_SCRIPT.length; i++) {
       if (cancelRef.current) return
       setIntroLine(i)
-      await speakAgentAsync('BARRIER', INTRO_SCRIPT[i])
+      await speakAgentAsync('NARRATOR', INTRO_SCRIPT[i])
       if (i < INTRO_SCRIPT.length - 1) await delay(400)
     }
     await delay(500)
@@ -345,9 +345,18 @@ function AgentBriefing({ onClose }) {
         <div className="brief-spotlight">
           {phase === 'intro' && (
             <div className="brief-intro">
-              <div className="brief-intro-tare">TARE</div>
-              <div className="brief-intro-tagline">TRUSTED ACCESS RESPONSE ENGINE</div>
-              <div key={introLine} className="brief-intro-line">{INTRO_SCRIPT[introLine]}</div>
+              <div key={introLine} className="brief-intro-scene">
+                <img
+                  src={`/intro/${introLine + 1}.jpg`}
+                  className="brief-intro-img"
+                  alt=""
+                  onError={e => { e.currentTarget.style.display = 'none' }}
+                />
+                <div className="brief-intro-overlay">
+                  <div className="brief-intro-tare">TARE</div>
+                  <div className="brief-intro-tagline">TRUSTED ACCESS RESPONSE ENGINE</div>
+                </div>
+              </div>
             </div>
           )}
 

@@ -35,6 +35,7 @@ const FALLBACK_PROFILES = {
   TEMPEST:  { voices: ['Google UK English Female', 'Microsoft Hazel', 'Karen'],               pitch: 1.05, rate: 1.2,  volume: 0.85 },
   LEVIER:   { voices: ['Microsoft Zira',           'Google US English', 'Victoria'],          pitch: 1.0,  rate: 0.9,  volume: 0.9  },
   BARRIER:  { voices: ['Microsoft Mark',           'Google UK English Male', 'Fred'],         pitch: 0.65, rate: 0.85, volume: 1.0  },
+  NARRATOR: { voices: ['Google US English',         'Microsoft David', 'Alex'],               pitch: 1.0,  rate: 1.02, volume: 0.9  },
 }
 
 let _voiceMap = {}
