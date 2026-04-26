@@ -108,7 +108,7 @@ export const NARRATION = [
   { text: "Click Deny.", pause: 5000 },
 
   // ── CLOSE ─────────────────────────────────────────────────────────────────
-  { text: "Six scenarios. Three defence layers. Twelve specialised agents. One platform.", pause: 1000 },
+  { text: "Six scenarios. Three defence layers. Thirteen specialised agents. One platform.", pause: 1000 },
   { text: "Pre-grant identity checks. Post-grant rule-based monitoring. Machine learning for the attacks that rules cannot see. And a human supervisor who stays in control of every final decision.", pause: 1200 },
   { text: "An AI agent with completely valid credentials, passing every authentication check in the world, can still be a security threat.", pause: 1000 },
   { text: "TARE catches it. Contains it. And gives the right human the right information to make the right call — automatically, in real time, before anything reaches the grid.", pause: 1200 },
@@ -150,7 +150,7 @@ const MONITORS = [
 const STATS = [
   { value:'6',    label:'Attack\nScenarios'    },
   { value:'3',    label:'Detection\nLayers'    },
-  { value:'12',   label:'AI Agents\nActive'    },
+  { value:'13',   label:'AI Agents\nActive'    },
   { value:'LLM',  label:'Real AI\nAgent'       },
   { value:'AUTO', label:'Autonomous\nResponse' },
 ]
