@@ -188,6 +188,11 @@ def run_runaway_loop_agent(engine, broadcast_fn):
                        "TARE monitoring session tempo..."})
         time.sleep(1.5)
 
+        # Reset loop detection state so the scenario always works, even on re-run without reset
+        with engine._lock:
+            engine._loop_fired = False
+            engine.loop_tracker = {}
+
         # Agent fires the same command rapidly — valid creds, valid command, wrong rate
         # Uses Z3 (agent's assigned zone) so MAREA doesn't flag OUT_OF_ZONE —
         # the threat here is rate/behaviour, not zone access.

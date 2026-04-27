@@ -809,6 +809,13 @@ class TAREEngine:
 
     def _fire_runaway_loop(self, command: str, asset_id: str, zone: str, count: int):
         """TEMPEST detects runaway loop — same request fired too fast. TARE applies SAFETY HOLD."""
+        try:
+            self._fire_runaway_loop_inner(command, asset_id, zone, count)
+        except Exception as e:
+            print(f"[TARE ERROR] _fire_runaway_loop failed: {e}", flush=True)
+            import traceback; traceback.print_exc()
+
+    def _fire_runaway_loop_inner(self, command: str, asset_id: str, zone: str, count: int):
         time.sleep(0.3)
 
         # TEMPEST detects
