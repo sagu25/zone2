@@ -9,12 +9,12 @@ export default function LeftPanel({ agent, mode, signals, score, incident,
                                     voiceMuted, onToggleVoice }) {
   const [tab, setTab] = useState('agents')
 
-  // Auto-switch to TARE when anomaly fires
+  // Auto-switch to TARE when anomaly fires — but incident tab takes priority
   useEffect(() => {
-    if (mode === 'FREEZE' || mode === 'DOWNGRADE') setTab('tare')
+    if ((mode === 'FREEZE' || mode === 'DOWNGRADE') && !incident) setTab('tare')
   }, [mode])
 
-  // Auto-switch to incident when incident is created
+  // Auto-switch to incident when incident is created — always wins
   useEffect(() => {
     if (incident) setTab('incident')
   }, [incident?.incident_id])

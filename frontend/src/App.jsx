@@ -184,6 +184,7 @@ export default function App() {
       setShowFlash(true)
       setTimeout(() => setShowFlash(false), 700)
       playSiren()
+      clearVoiceQueue()   // drop stale KORAL/MAREA commentary when FREEZE fires
     }
     prevModeRef.current = snap.mode
   }, [snap.mode])
