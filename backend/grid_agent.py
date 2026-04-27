@@ -107,9 +107,9 @@ def run_repeated_failures_agent(engine, broadcast_fn):
             "scenario":        "repeated_failures",
             "title":           "Repeated Failed Attempts",
             "description":     (
-                "An automation agent attempts OPEN_BREAKER on a Zone 1 asset. "
-                "The action is blocked by BARRIER due to a safety interlock. "
-                "Instead of adjusting, the agent retries the same command repeatedly. "
+                "An automation agent attempts OPEN_BREAKER on a Zone 3 asset. "
+                "The action is blocked by BARRIER — the safety simulation precondition has not been met. "
+                "The system stays NORMAL. Instead of adjusting, the agent retries the same command repeatedly. "
                 "TEMPEST detects the unsafe persistence pattern and TARE fires a full FREEZE."
             ),
             "featured_agents": ["TEMPEST", "BARRIER"],
@@ -118,28 +118,29 @@ def run_repeated_failures_agent(engine, broadcast_fn):
         })
 
         broadcast_fn({"type": "CHAT_MESSAGE", "role": "system",
-            "message": "AutomationAgent-7 online — executing scheduled Zone 1 switching task. "
+            "message": "AutomationAgent-7 online — executing scheduled Zone 3 switching task. "
                        "TARE monitoring..."})
         time.sleep(1.5)
 
-        # Pre-condition: set BARRIER to DOWNGRADE so OPEN_BREAKER is blocked
-        # (simulates safety interlock — agent has no simulation precondition met)
+        # Pre-condition: inject Zone 3 fault and activate safety interlock on BARRIER.
+        # Engine stays NORMAL — the system looks clean. Only BARRIER knows the
+        # simulation precondition has not been met. Mode changes only when TEMPEST fires.
+        engine.inject_fault("Z3", "Feeder instability — safety simulation not yet completed")
         with engine._lock:
-            engine._set_mode("DOWNGRADE")
-            engine.barrier.set_mode("DOWNGRADE")
+            engine.barrier.set_mode("INTERLOCK")
         broadcast_fn(engine._snapshot())
 
         broadcast_fn({"type": "CHAT_MESSAGE", "role": "system",
-            "message": "Zone 1 safety interlock active — simulation precondition not met. "
+            "message": "Zone 3 safety interlock active — simulation precondition not met. "
                        "Agent attempting OPEN_BREAKER regardless..."})
         time.sleep(1.0)
 
         # Agent retries 4 times — TEMPEST fires on the 3rd failure
         for attempt in range(1, 5):
             broadcast_fn({"type": "CHAT_MESSAGE", "role": "system",
-                "message": f"Attempt {attempt}/4: OPEN_BREAKER BRK-110 Z1..."})
+                "message": f"Attempt {attempt}/4: OPEN_BREAKER BRK-301 Z3..."})
             time.sleep(1.4)
-            engine.process_command("OPEN_BREAKER", "BRK-110", "Z1",
+            engine.process_command("OPEN_BREAKER", "BRK-301", "Z3",
                                    token="eyJhbGciOiJSUzI1NiJ9.TARE-MOCK-TOKEN")
             time.sleep(0.8)
             if attempt >= 3:
@@ -147,7 +148,7 @@ def run_repeated_failures_agent(engine, broadcast_fn):
 
         time.sleep(4)
         _end_scenario(engine, broadcast_fn, "repeated_failures", "caught",
-            "BARRIER blocked OPEN_BREAKER each time — safety interlock was active. "
+            "BARRIER blocked OPEN_BREAKER each time — safety interlock was active, simulation not run. "
             "A well-behaved agent would stop and investigate after one failure. "
             "This agent retried identically 3 times — TEMPEST flagged the unsafe persistence. "
             "TARE froze the system. P1 Critical incident raised. Likely cause: automation bug or misuse.",

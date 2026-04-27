@@ -107,6 +107,15 @@ class BARRIER:
                     "Within RBAC and baseline policy",
                     "POL-NORMAL-001")
 
+        elif m == "INTERLOCK":
+            if command in HIGH_IMPACT:
+                return ("DENY",
+                        "Safety interlock active — run SIMULATE_SWITCH before high-impact operations",
+                        "POL-INTERLOCK-001")
+            return ("ALLOW",
+                    "Safety interlock active — read and diagnostic operations permitted",
+                    "POL-INTERLOCK-002")
+
         elif m == "FREEZE":
             if command in READ_ONLY:
                 return ("ALLOW",
