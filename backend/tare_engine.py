@@ -484,6 +484,7 @@ class TAREEngine:
 
         identity    = get_identity(principal)
         action_type = classify_action(action)
+        ts_now      = datetime.now().isoformat()
 
         # Step 1: KORAL logs the action attempt
         self._broadcast_agent_wake("KORAL", f"Logging identity action: {principal} → {action}")
@@ -497,6 +498,37 @@ class TAREEngine:
                     "reason": f"Unknown principal: {principal}", "violation": True}
 
         allowed = is_action_allowed(principal, action)
+
+        # Log every command to the gateway so it appears in the Command Gateway UI
+        decision_for_log = "ALLOW" if allowed else "DENY"
+        reason_for_log   = (
+            "Read-only identity — write/control operation blocked by identity policy"
+            if not allowed and is_write_or_control(action)
+            else "Within identity role permissions"
+        )
+        with self._lock:
+            self.stats["total"] += 1
+            if decision_for_log == "ALLOW":
+                self.stats["allowed"] += 1
+            else:
+                self.stats["denied"] += 1
+            log_entry = {
+                "id":       str(uuid.uuid4())[:8],
+                "ts":       ts_now,
+                "command":  action,
+                "asset_id": principal,
+                "zone":     target_zone,
+                "decision": decision_for_log,
+                "reason":   reason_for_log,
+                "policy":   "POL-IDENTITY-001" if not allowed else "POL-IDENTITY-002",
+                "mode":     self.mode,
+                "signals":  [{"signal": "IDENTITY_POLICY_VIOLATION", "detail": f"{principal} (READ_ONLY_MONITOR) attempted {action}", "severity": "HIGH"}] if not allowed else [],
+            }
+            self.gateway_log.insert(0, log_entry)
+            self.gateway_log = self.gateway_log[:30]
+
+        self._broadcast({"type": "GATEWAY_DECISION", **log_entry})
+        self._broadcast(self._snapshot())
 
         # Step 2: TARE evaluates policy
         if not allowed and is_write_or_control(action):
