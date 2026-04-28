@@ -229,7 +229,7 @@ export default function App() {
       <div className="app-layout">
         <Header wsConnected={wsConnected} darkMode={darkMode} onToggleTheme={() => setDarkMode(d => !d)} />
 
-        <NarrativeBanner mode={snap.mode} agent={snap.agent} signals={snap.anomaly_signals} incident={snap.active_incident} />
+        <NarrativeBanner mode={snap.mode} agent={snap.agent} signals={snap.anomaly_signals} incident={snap.active_incident} timeboxTotal={snap.timebox_total} />
 
         <div className="main-grid">
           {/* LEFT — full height */}

@@ -32,7 +32,7 @@ function detectScenario(signals, incident) {
   return 'anomaly'
 }
 
-function getNarrative(mode, agent, signals, incident) {
+function getNarrative(mode, agent, signals, incident, timeboxMins = 3) {
   const scenario = detectScenario(signals, incident)
 
   switch (mode) {
@@ -66,7 +66,7 @@ function getNarrative(mode, agent, signals, incident) {
     }
 
     case 'TIMEBOX_ACTIVE':
-      return 'Supervisor approved a limited 3-minute window for the agent to complete its authorised task. The highest-risk operations remain permanently blocked. The window will close automatically when time is up.'
+      return `Supervisor approved a limited ${timeboxMins}-minute window for the agent to complete its authorised task. The highest-risk operations remain permanently blocked. The window will close automatically when time is up.`
 
     case 'SAFE':
       return 'System is in Safe Mode — the agent\'s access window has closed. All grid switching is blocked until a full review is completed and an operator re-authorises the system to resume normal operations.'
@@ -78,10 +78,11 @@ function getNarrative(mode, agent, signals, incident) {
 
 const PIPELINE = MODE_ORDER
 
-export default function NarrativeBanner({ mode, agent, signals, incident }) {
+export default function NarrativeBanner({ mode, agent, signals, incident, timeboxTotal }) {
   const currentIdx = PIPELINE.indexOf(mode)
   const level      = LEVEL_MAP[mode] || 'ok'
-  const narrative  = getNarrative(mode, agent, signals, incident)
+  const timeboxMins = timeboxTotal ? Math.round(timeboxTotal / 60) : 3
+  const narrative  = getNarrative(mode, agent, signals, incident, timeboxMins)
 
   return (
     <div className={`narrative-banner banner-${level}`}>
