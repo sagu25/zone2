@@ -46,7 +46,7 @@ function getNarrative(mode, agent, signals, incident, timeboxMins = 3) {
       if (scenario === 'readonly_breach')
         return '🚨 IDENTITY POLICY VIOLATION — A read-only monitoring identity attempted to issue a write command. BARRIER has blocked the action and applied a read-only restriction on that identity. ServiceNow incident raised.'
       if (!agent || agent.action_count === 0)
-        return 'System is ready. The AI agent has permission to work in Zone 3 (West Grid). Every command it issues is automatically checked before it reaches the grid.'
+        return 'System is ready. Every command issued by the agent is automatically checked before it reaches the grid.'
       return `AI agent is working normally — ${agent.action_count} command${agent.action_count !== 1 ? 's' : ''} issued, all within its permitted zone. Security checks passing — no suspicious behaviour detected.`
 
     case 'FREEZE': {
