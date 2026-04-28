@@ -17,6 +17,12 @@ const LEVEL_MAP = {
 }
 
 function detectScenario(signals, incident) {
+  // Incident-based detection (more reliable than signals alone)
+  if (incident?.enforcement === 'READ_ONLY_DOWNGRADE')             return 'readonly_breach'
+  if (incident?.category === 'Security / Runtime Behaviour')       return 'runaway_loop'
+  if (incident?.category === 'Security / Retry Pattern')           return 'repeated_failures'
+  if (incident?.category === 'Security / Time-Context')            return 'out_of_hours'
+
   if (!signals || signals.length === 0) return null
   const names = signals.map(s => s.signal)
   const hasML        = names.includes('ML_ANOMALY')
@@ -37,13 +43,19 @@ function getNarrative(mode, agent, signals, incident, timeboxMins = 3) {
 
   switch (mode) {
     case 'NORMAL':
+      if (scenario === 'readonly_breach')
+        return '🚨 IDENTITY POLICY VIOLATION — A read-only monitoring identity attempted to issue a write command. BARRIER has blocked the action and applied a read-only restriction on that identity. ServiceNow incident raised.'
       if (!agent || agent.action_count === 0)
         return 'System is ready. The AI agent has permission to work in Zone 3 (West Grid). Every command it issues is automatically checked before it reaches the grid.'
       return `AI agent is working normally — ${agent.action_count} command${agent.action_count !== 1 ? 's' : ''} issued, all within its permitted zone. Security checks passing — no suspicious behaviour detected.`
 
     case 'FREEZE': {
+      if (scenario === 'runaway_loop')
+        return '🚨 RUNAWAY LOOP CONTAINED — An automation agent entered an infinite loop, firing the same command at machine speed. Credentials were valid — this is a runtime failure, not an identity attack. SAFETY HOLD applied automatically. P1 incident raised.'
+      if (scenario === 'repeated_failures')
+        return '🚨 UNSAFE RETRY PATTERN DETECTED — An agent retried the same blocked command repeatedly without adjusting. TEMPEST flagged the unsafe persistence. All operations frozen. Likely cause: automation bug or stale logic. P1 incident raised.'
       if (scenario === 'clone')
-        return '🚨 FAKE IDENTITY DETECTED — An agent tried to access the grid using a stolen identity. It was blocked instantly at the door — no commands reached the grid. Security team has been notified.'
+        return '🚨 FAKE IDENTITY DETECTED — An agent tried to access the grid using a forged credential token. It was blocked instantly at the door — no commands reached the grid. Security team has been notified.'
       if (scenario === 'slowlow')
         return '🚨 SILENT RECON DETECTED — An agent was quietly mapping every part of the grid, one read at a time. It stayed below rule thresholds, but the AI behaviour model flagged it. All access has been frozen.'
       if (scenario === 'rogue')
@@ -54,6 +66,8 @@ function getNarrative(mode, agent, signals, incident, timeboxMins = 3) {
     }
 
     case 'DOWNGRADE': {
+      if (scenario === 'out_of_hours')
+        return '⏱ OUT-OF-HOURS ACTION BLOCKED — A high-impact command was attempted outside the approved operational window with no active maintenance ticket. Operations downgraded to diagnostics only. Supervisor approval required for a 15-minute emergency window.'
       if (scenario === 'clone')
         return 'Identity fraud confirmed. The agent\'s access remains fully blocked — it can view nothing and change nothing. SOC team has been assigned to investigate the source of the forged credential.'
       if (scenario === 'slowlow')
