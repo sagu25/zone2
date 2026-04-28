@@ -50,7 +50,7 @@ export default function ZoneObservatory({ zones, assets, accessLog, mode, darkMo
     <div className="panel zone-panel">
       <div className="panel-title">
         <span className="dot" />
-        Zone Observatory · OT/SCADA Grid Map
+        Zone Observatory
         <span style={{ marginLeft:'auto', fontSize:'0.5rem', color:'var(--text-dim)', fontFamily:'var(--font-mono)' }}>
           REAL-TIME
         </span>
@@ -152,13 +152,6 @@ export default function ZoneObservatory({ zones, assets, accessLog, mode, darkMo
             )
           })}
 
-          {/* Top status bar */}
-          <rect x={130} y={4} width={320} height={19} rx={4}
-            fill="rgba(200,216,232,0.05)" stroke="rgba(200,216,232,0.2)" strokeWidth={1} />
-          <text x={290} y={17}
-            style={{ fontFamily:'var(--font-mono)', fontSize:'9.5px', fill:'#c8d8e8', fontWeight:700, textAnchor:'middle', letterSpacing:'0.08em', opacity:0.8 }}>
-            ACTIVE TASK: Zone 3 · CLEARED: ALL ZONES
-          </text>
         </svg>
       </div>
     </div>
