@@ -924,6 +924,19 @@
   letter-spacing: 0.15em;
 }
 
+/* Completed variant — green dots + label */
+.brief-sys-done .brief-sys-dot {
+  background: #00e87c;
+  box-shadow: 0 0 8px #00e87c;
+}
+.brief-sys-label-done {
+  color: #00e87c !important;
+  text-shadow: 0 0 16px #00e87c44;
+}
+.brief-sys-done .brief-sys-sub {
+  color: #2a6a44;
+}
+
 /* Cinematic intro */
 .brief-intro {
   display: flex;

@@ -1,4 +1,4 @@
-"""
+﻿"""
 TARE Engine — Trusted Access Response Engine
 Central orchestrator of the full 12-agent security system.
 
@@ -221,12 +221,16 @@ class TAREEngine:
             }
 
             # ── Step 2: KORAL observes ─────────────────────────────────────────
-            self._broadcast_agent_wake("KORAL", "Recording telemetry")
+            # runtime_only (runaway loop): KORAL records silently — no UI wake/voice.
+            # Only TEMPEST and BARRIER should appear in that scenario's timeline.
+            if not runtime_only:
+                self._broadcast_agent_wake("KORAL", "Recording telemetry")
             self.koral.observe(rec)
-            self._broadcast_agent_sleep("KORAL")
-            recent_n = len([t for t in self.koral.get_burst_window() if now - t < 10])
-            if recent_n > 3:
-                self._voice("KORAL", f"{recent_n} commands in the last 10 seconds — burst rate exceeded. Flagging to MAREA.")
+            if not runtime_only:
+                self._broadcast_agent_sleep("KORAL")
+                recent_n = len([t for t in self.koral.get_burst_window() if now - t < 10])
+                if recent_n > 3:
+                    self._voice("KORAL", f"{recent_n} commands in the last 10 seconds — burst rate exceeded. Flagging to MAREA.")
 
             # ── TEMPEST loop detection (independent of MAREA/NEREUS path) ─────
             if not self._loop_fired:

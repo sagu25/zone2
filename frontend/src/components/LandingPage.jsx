@@ -258,15 +258,22 @@ const INTRO_SCRIPT = [
 
 // ── Agent Briefing Modal ──────────────────────────────────────────────────────
 // phase: 'intro' | 'starting' | 'active' | 'passing' | 'done'
-function AgentBriefing({ onClose }) {
+function AgentBriefing({ onClose, onEnterDashboard }) {
   const [phase,      setPhase]      = useState('intro')
   const [activeIdx,  setActiveIdx]  = useState(-1)
   const [nextName,   setNextName]   = useState('')
   const [nextColor,  setNextColor]  = useState('#00d4ff')
   const [introLine,     setIntroLine]     = useState(0)
   const [introImageIdx, setIntroImageIdx] = useState(0)
-  const cancelRef = useRef(false)
+  const cancelRef      = useRef(false)
+  const activeAgentRef = useRef(null)
   const delay = ms => new Promise(r => setTimeout(r, ms))
+
+  useEffect(() => {
+    if (activeIdx >= 0 && activeAgentRef.current) {
+      activeAgentRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
+  }, [activeIdx])
 
   async function startBriefing() {
     cancelRef.current = false
@@ -323,13 +330,16 @@ function AgentBriefing({ onClose }) {
       await speakAgentAsync('NARRATOR', "All thirteen agents have been briefed. Now let's move on to the dashboard.")
       setPhase('done')
       setActiveIdx(-1)
+      await delay(1400)
+      if (!cancelRef.current) onEnterDashboard()
     }
   }
 
   function handleSkip() {
     cancelRef.current = true
     clearVoiceQueue()
-    onClose()
+    if (phase === 'done') onEnterDashboard()
+    else onClose()
   }
 
   useEffect(() => {
@@ -419,10 +429,10 @@ function AgentBriefing({ onClose }) {
           )}
 
           {isDone && (
-            <div className="brief-done-card">
-              <div className="brief-done-check">✓</div>
-              <div className="brief-done-label">All agents briefed</div>
-              <div className="brief-done-sub">Ready to deploy</div>
+            <div className="brief-sys-start brief-sys-done">
+              <div className="brief-sys-dot" /><div className="brief-sys-dot" /><div className="brief-sys-dot" />
+              <div className="brief-sys-label brief-sys-label-done">SYSTEM BRIEFING COMPLETED</div>
+              <div className="brief-sys-sub">Navigating to dashboard…</div>
             </div>
           )}
         </div>
@@ -445,6 +455,7 @@ function AgentBriefing({ onClose }) {
                     return (
                       <div
                         key={item.agent}
+                        ref={isActive ? activeAgentRef : null}
                         className={`brief-agent ${isActive ? 'brief-agent-active' : ''} ${isPast && !isActive ? 'brief-agent-done' : ''}`}
                         style={{ '--agent-color': item.color }}
                       >
@@ -772,7 +783,7 @@ export default function LandingPage({ onEnter }) {
 
     </div>
 
-    {briefing && <AgentBriefing onClose={() => setBriefing(false)} />}
+    {briefing && <AgentBriefing onClose={() => setBriefing(false)} onEnterDashboard={() => { setBriefing(false); handleEnter() }} />}
     </>
   )
 }
