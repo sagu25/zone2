@@ -122,16 +122,16 @@ def run_repeated_failures_agent(engine, broadcast_fn):
                        "TARE monitoring..."})
         time.sleep(1.5)
 
-        # Pre-condition: inject Zone 3 fault and activate safety interlock on BARRIER.
-        # Engine stays NORMAL — the system looks clean. Only BARRIER knows the
-        # simulation precondition has not been met. Mode changes only when TEMPEST fires.
-        engine.inject_fault("Z3", "Feeder instability — safety simulation not yet completed")
+        # Pre-condition: activate safety interlock on BARRIER only.
+        # Zone 3 stays healthy — the grid looks clean. BARRIER blocks OPEN_BREAKER
+        # because the mandatory SIMULATE_SWITCH precondition has not been met.
+        # Mode changes only when TEMPEST fires.
         with engine._lock:
             engine.barrier.set_mode("INTERLOCK")
         broadcast_fn(engine._snapshot())
 
         broadcast_fn({"type": "CHAT_MESSAGE", "role": "system",
-            "message": "Zone 3 safety interlock active — simulation precondition not met. "
+            "message": "Safety interlock active — SIMULATE_SWITCH precondition not met. "
                        "Agent attempting OPEN_BREAKER regardless..."})
         time.sleep(1.0)
 
@@ -202,7 +202,8 @@ def run_runaway_loop_agent(engine, broadcast_fn):
                     "message": "Agent issuing PULL_METRICS on FDR-301 — normal diagnostic read..."})
             time.sleep(0.35)   # ~170 requests/min — well above any operational baseline
             engine.process_command("PULL_METRICS", "FDR-301", "Z3",
-                                   token="eyJhbGciOiJSUzI1NiJ9.TARE-MOCK-TOKEN")
+                                   token="eyJhbGciOiJSUzI1NiJ9.TARE-MOCK-TOKEN",
+                                   runtime_only=True)  # skip MAREA/TASYA/NEREUS — only TEMPEST+BARRIER
 
         time.sleep(5)
         _end_scenario(engine, broadcast_fn, "runaway_loop", "caught",

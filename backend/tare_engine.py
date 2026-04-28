@@ -178,15 +178,19 @@ class TAREEngine:
         self._broadcast({"type": "RESET", "message": "System reset. All zones nominal. TARE in NORMAL mode."})
         self._broadcast(self._snapshot())
 
-    def process_command(self, command, asset_id, zone, skip_sim=False, token=None):
+    def process_command(self, command, asset_id, zone, skip_sim=False, token=None,
+                        runtime_only=False):
         """
         Main gateway entry point. Every command passes through here.
+
+        runtime_only=True  → skip Zone-3 analytics (MAREA/TASYA/NEREUS). Used by the
+                             runaway loop scenario where only TEMPEST + BARRIER are involved.
 
         Orchestration flow:
           1. Pre-grant identity check (token fingerprint)
           2. KORAL observes the command
           3. BARRIER enforces current mode → ALLOW / DENY
-          4. If NORMAL mode: MAREA analyzes for drift signals
+          4. If NORMAL mode and not runtime_only: MAREA analyzes for drift signals
           5. If signals found: TASYA correlates with context
           6. If ≥2 signals: NEREUS recommends action to TARE
           7. TARE decides and instructs BARRIER to update mode
@@ -198,6 +202,8 @@ class TAREEngine:
 
         now = time.time()
         ts  = datetime.now().isoformat()
+
+        _pending_nereus = None   # (signals, session, agent) — set inside lock, LLM called outside
 
         with self._lock:
             self.stats["total"] += 1
@@ -242,8 +248,8 @@ class TAREEngine:
 
             signals = []
 
-            # ── Step 4: MAREA analyzes (only in NORMAL mode) ──────────────────
-            if self.mode == "NORMAL":
+            # ── Step 4: MAREA analyzes (only in NORMAL mode, not for runtime-only paths) ──
+            if self.mode == "NORMAL" and not runtime_only:
                 self._broadcast_agent_wake("MAREA", "Analyzing for drift signals")
                 signals = self.marea.analyze(
                     command     = command,
@@ -289,19 +295,11 @@ class TAREEngine:
 
                 elif len(signals) >= 2:
                     self._broadcast_agent_wake("NEREUS", f"Recommending action — {len(signals)} signals detected")
-                    recommendation = self.nereus.recommend(
-                        signals         = signals,
-                        agent           = self.agent,
-                        recent_commands = self.koral.get_session(30),
-                    )
-                    sig_list = ', '.join(s['signal'].replace('_',' ').lower() for s in signals)
-                    if recommendation.get("action") == "FREEZE":
-                        self._voice("NEREUS", f"{len(signals)} signals — {sig_list}. No operational justification. Recommending FREEZE.")
-                    self._broadcast_agent_sleep("NEREUS")
-
-                    # ── Step 7: TARE decides ───────────────────────────────────
-                    if recommendation["action"] == "FREEZE":
-                        self._fire_tare(signals, recommendation)
+                    # Capture state for NEREUS LLM call — runs outside lock to avoid
+                    # holding the lock during the Groq API call (can take several seconds),
+                    # which would delay subsequent process_command calls and break the
+                    # 5-second TEMPEST loop-detection window.
+                    _pending_nereus = (list(signals), self.koral.get_session(30), dict(self.agent))
 
             # Update agent state
             self.agent["last_result"] = decision
@@ -332,6 +330,23 @@ class TAREEngine:
                 self.retry_counts[key] = self.retry_counts.get(key, 0) + 1
                 if self.retry_counts[key] == 3 and self.mode != "FREEZE":
                     threading.Thread(target=self._fire_repeated_failure, args=(command, asset_id, zone, self.retry_counts[key]), daemon=True).start()
+
+        # ── NEREUS LLM call outside the lock ──────────────────────────────────
+        # Groq API can take 1-5s; running it here keeps the lock free so the
+        # TEMPEST loop-detection window (5s) is not disrupted by LLM latency.
+        if _pending_nereus:
+            _nereus_signals, _nereus_session, _nereus_agent = _pending_nereus
+            recommendation = self.nereus.recommend(
+                signals         = _nereus_signals,
+                agent           = _nereus_agent,
+                recent_commands = _nereus_session,
+            )
+            sig_list = ', '.join(s['signal'].replace('_',' ').lower() for s in _nereus_signals)
+            if recommendation.get("action") == "FREEZE":
+                self._voice("NEREUS", f"{len(_nereus_signals)} signals — {sig_list}. No operational justification. Recommending FREEZE.")
+            self._broadcast_agent_sleep("NEREUS")
+            if recommendation["action"] == "FREEZE":
+                self._fire_tare(_nereus_signals, recommendation)
 
         self._broadcast({
             "type":     "GATEWAY_DECISION",
@@ -1224,11 +1239,12 @@ class TAREEngine:
 
     def _fire_tare(self, signals, recommendation):
         """TARE decides FREEZE based on NEREUS recommendation. Instructs BARRIER."""
-        self._set_mode("FREEZE")
-        self.barrier.set_mode("FREEZE")
-        self.anomaly_signals = signals
-        self.anomaly_score   = len(signals) * 25
-        self.stats["freeze_events"] += 1
+        with self._lock:
+            self._set_mode("FREEZE")
+            self.barrier.set_mode("FREEZE")
+            self.anomaly_signals = signals
+            self.anomaly_score   = len(signals) * 25
+            self.stats["freeze_events"] += 1
 
         recent = self.koral.get_session(20)
         evidence = {
@@ -1302,8 +1318,8 @@ class TAREEngine:
         })
         self._broadcast(self._snapshot())
 
-        # Update incident with full post-burst evidence
-        if self.active_incident is not None:
+        # Update incident with full post-burst evidence (only if it still has an evidence block)
+        if self.active_incident is not None and "evidence" in self.active_incident:
             recent = self.koral.get_session(30)
             self.active_incident["evidence"]["recent_commands"] = recent
             self.active_incident["evidence"]["actions_taken"].append(
